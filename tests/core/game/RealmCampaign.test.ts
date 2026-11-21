@@ -41,3 +41,51 @@ describe("realm campaign foundations", () => {
     );
   });
 });
+
+
+describe("realm campaign turn simulation", () => {
+  it("consumes food, collects taxes, grows population, and advances one month", async () => {
+    const { advanceRealmCampaignTurn } = await import(
+      "@openfront/engine-api/game/RealmCampaign"
+    );
+    const initial = createRealmCampaignState("classic");
+    const { state, report } = advanceRealmCampaignTurn(initial);
+
+    expect(state.turn).toBe(1);
+    expect(state.resources.food).toBeLessThan(initial.resources.food);
+    expect(state.resources.gold).toBeGreaterThan(initial.resources.gold);
+    expect(state.population.total).toBeGreaterThan(initial.population.total);
+    expect(report.foodCoverage).toBe(1);
+    expect(initial.turn).toBe(0);
+  });
+
+  it("causes shortages and population decline when food stores are empty", async () => {
+    const { advanceRealmCampaignTurn } = await import(
+      "@openfront/engine-api/game/RealmCampaign"
+    );
+    const initial = createRealmCampaignState("classic");
+    initial.resources.food = 0;
+    const { state, report } = advanceRealmCampaignTurn(initial);
+
+    expect(report.foodCoverage).toBe(0);
+    expect(state.population.total).toBeLessThan(initial.population.total);
+    expect(state.stability.causes).toContain("food-shortage");
+  });
+
+  it("clamps domestic policy inputs and preserves the original state", async () => {
+    const { updateRealmDomesticPolicy } = await import(
+      "@openfront/engine-api/game/RealmCampaign"
+    );
+    const initial = createRealmCampaignState("murim");
+    const updated = updateRealmDomesticPolicy(initial, {
+      taxRate: 5,
+      foodRation: -1,
+      conscriptionRate: 0.4,
+    });
+
+    expect(updated.policy.taxRate).toBe(1);
+    expect(updated.policy.foodRation).toBe(0);
+    expect(updated.policy.conscriptionRate).toBe(0.4);
+    expect(initial.policy.taxRate).toBe(0.2);
+  });
+});
