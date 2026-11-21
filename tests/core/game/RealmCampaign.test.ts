@@ -89,3 +89,51 @@ describe("realm campaign turn simulation", () => {
     expect(initial.policy.taxRate).toBe(0.2);
   });
 });
+
+
+describe("realm structure upgrades", () => {
+  it("increases a building level and scales its production", async () => {
+    const { advanceRealmCampaignTurn, buildRealmStructure, upgradeRealmStructure } = await import(
+      "@openfront/engine-api/game/RealmCampaign"
+    );
+    const initial = createRealmCampaignState("classic");
+    const built = buildRealmStructure(initial, "farm")!;
+    const upgraded = upgradeRealmStructure(built, built.buildings[0].id)!;
+
+    expect(upgraded.buildings[0].level).toBe(2);
+    expect(upgraded.resources.wood).toBe(built.resources.wood - 15);
+    expect(initial.buildings).toHaveLength(0);
+
+    const oneLevel = advanceRealmCampaignTurn(built).state.resources.food;
+    const twoLevels = advanceRealmCampaignTurn(upgraded).state.resources.food;
+    expect(twoLevels - oneLevel).toBe(30);
+  });
+
+  it("rejects missing, capped, or unaffordable upgrades without mutation", async () => {
+    const { buildRealmStructure, upgradeRealmStructure } = await import(
+      "@openfront/engine-api/game/RealmCampaign"
+    );
+    const initial = createRealmCampaignState("classic");
+    expect(upgradeRealmStructure(initial, "missing")).toBeNull();
+
+    const built = buildRealmStructure(initial, "farm")!;
+    const poor = { ...built, resources: { ...built.resources, wood: 0 } };
+    expect(upgradeRealmStructure(poor, built.buildings[0].id)).toBeNull();
+
+    const capped = {
+      ...built,
+      buildings: [{ ...built.buildings[0], level: 10 }],
+    };
+    expect(upgradeRealmStructure(capped, built.buildings[0].id)).toBeNull();
+    expect(built.buildings[0].level).toBe(1);
+  });
+
+  it("does not allow upgrading a structure that is invalid for the selected realm", async () => {
+    const { upgradeRealmStructure } = await import(
+      "@openfront/engine-api/game/RealmCampaign"
+    );
+    const state = createRealmCampaignState("classic");
+    state.buildings = [{ id: "mana-1", type: "manaSanctum", level: 1 }];
+    expect(upgradeRealmStructure(state, "mana-1")).toBeNull();
+  });
+});
