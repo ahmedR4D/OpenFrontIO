@@ -143,13 +143,14 @@ describe("realm territory synchronization", () => {
   it(
     "uses the live OpenFront player ownership count without mutating the campaign",
     () => {
-    const initial = createRealmCampaignState("classic");
-    const player = { numTilesOwned: () => 37 };
-    const synchronized = syncRealmTerritory(initial, player);
+      const initial = createRealmCampaignState("classic");
+      const player = { numTilesOwned: () => 37 };
+      const synchronized = syncRealmTerritory(initial, player);
 
-    expect(synchronized.territoryTiles).toBe(37);
-    expect(initial.territoryTiles).toBe(0);
-  });
+      expect(synchronized.territoryTiles).toBe(37);
+      expect(initial.territoryTiles).toBe(0);
+    },
+  );
 
   it("normalizes invalid ownership counts to a non-negative integer", () => {
     const initial = createRealmCampaignState("classic");
