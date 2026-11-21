@@ -122,3 +122,13 @@ turn scheduler currently calls these APIs. When the campaign turn receives the
 live territory adapter, it refreshes the owned-tile count and filters production
 against current ownership. Without that adapter, map-backed structures do not
 produce.
+
+
+## Ownership-safe structure upgrades
+
+The map-aware upgrade entry point is upgradeRealmStructureAt. It requires a
+recorded TileRef and verifies current ownership before charging resources or
+increasing the structure level. Legacy structures without a map location are
+not eligible for this map-aware path. The original upgradeRealmStructure
+remains available for compatibility with location-free campaign simulations;
+live gameplay integration should use the tile-aware function.
