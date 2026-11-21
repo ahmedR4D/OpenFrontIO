@@ -116,7 +116,9 @@ counts structures with a recorded tile that is still owned by the player;
 legacy structures without a tile reference do not produce through this path.
 The older location-free build/production helpers remain for compatibility.
 
-This is an engine-API foundation with unit coverage, not yet a live gameplay
+This remains an engine-API foundation rather than a complete gameplay
 integration: no HUD build command, placement preview, persistence, or campaign
-turn scheduler currently calls these APIs. Capturing a structure tile also
-stops production when the ownership-filtered production function is used.
+turn scheduler currently calls these APIs. When the campaign turn receives the
+live territory adapter, it refreshes the owned-tile count and filters production
+against current ownership. Without that adapter, map-backed structures do not
+produce.
