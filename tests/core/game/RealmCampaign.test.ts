@@ -139,6 +139,17 @@ describe("realm structure upgrades", () => {
   });
 });
 
+  it("normalizes invalid live territory counts to zero", async () => {
+    const { syncRealmTerritory } =
+      await import("@openfront/engine-api/game/RealmCampaign");
+    const initial = createRealmCampaignState("classic");
+
+    expect(syncRealmTerritory(initial, { numTilesOwned: () => Number.NaN }).territoryTiles).toBe(0);
+    expect(syncRealmTerritory(initial, { numTilesOwned: () => Number.POSITIVE_INFINITY }).territoryTiles).toBe(0);
+    expect(syncRealmTerritory(initial, { numTilesOwned: () => -4.8 }).territoryTiles).toBe(0);
+    expect(syncRealmTerritory(initial, { numTilesOwned: () => 12.9 }).territoryTiles).toBe(12);
+  });
+
   it("refreshes the owned territory count when the live player adapter is supplied", async () => {
     const { advanceRealmCampaignTurn } =
       await import("@openfront/engine-api/game/RealmCampaign");
