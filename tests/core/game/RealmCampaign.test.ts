@@ -1,6 +1,7 @@
 import {
   calculateRealmStability,
   createRealmCampaignState,
+  syncRealmTerritory,
 } from "@openfront/engine-api/game/RealmCampaign";
 import { describe, expect, it } from "vitest";
 
@@ -132,5 +133,22 @@ describe("realm structure upgrades", () => {
     const state = createRealmCampaignState("classic");
     state.buildings = [{ id: "mana-1", type: "manaSanctum", level: 1 }];
     expect(upgradeRealmStructure(state, "mana-1")).toBeNull();
+  });
+});
+
+describe("realm territory synchronization", () => {
+  it("uses the live OpenFront player ownership count without mutating the campaign", () => {
+    const initial = createRealmCampaignState("classic");
+    const player = { numTilesOwned: () => 37 };
+    const synchronized = syncRealmTerritory(initial, player);
+
+    expect(synchronized.territoryTiles).toBe(37);
+    expect(initial.territoryTiles).toBe(0);
+  });
+
+  it("normalizes invalid ownership counts to a non-negative integer", () => {
+    const initial = createRealmCampaignState("classic");
+    expect(syncRealmTerritory(initial, { numTilesOwned: () => -4.8 }).territoryTiles).toBe(0);
+    expect(syncRealmTerritory(initial, { numTilesOwned: () => 12.9 }).territoryTiles).toBe(12);
   });
 });
