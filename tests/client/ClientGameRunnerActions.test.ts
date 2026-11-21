@@ -97,6 +97,7 @@ const CLICK = { x: 10, y: 20 };
 function makeRunner(overrides: {
   inSpawnPhase?: boolean;
   hasOwner?: boolean;
+  isImpassable?: boolean;
   playerByClientID?: () => unknown;
   actions?: Record<string, unknown>;
   boatDistSquared?: number;
@@ -114,6 +115,7 @@ function makeRunner(overrides: {
     isValidCoord: () => true,
     ref: () => TILE,
     isLand: () => true,
+    isImpassable: () => overrides.isImpassable ?? false,
     hasOwner: () => overrides.hasOwner ?? false,
     owner: () => ({ id: () => "enemy1" }),
     playerByClientID: vi.fn(overrides.playerByClientID ?? (() => myPlayer)),
@@ -171,6 +173,19 @@ describe("left click", () => {
 
     expect(spawns).toHaveLength(1);
     expect(spawns[0].tile).toBe(TILE);
+  });
+
+  it("does not offer impassable land as a spawn location", () => {
+    const { eventBus } = makeRunner({
+      inSpawnPhase: true,
+      isImpassable: true,
+    });
+    const spawns: SendSpawnIntentEvent[] = [];
+    eventBus.on(SendSpawnIntentEvent, (e) => spawns.push(e));
+
+    eventBus.emit(new MouseUpEvent(CLICK.x, CLICK.y));
+
+    expect(spawns).toHaveLength(0);
   });
 
   it("lazily resolves myPlayer by clientID and emits an attack intent", async () => {
