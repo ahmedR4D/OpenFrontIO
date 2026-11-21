@@ -55,6 +55,21 @@ Keep the upstream AGPL-3.0 source notices intact. Open assets under
 `/proprietary` or externally hosted proprietary assets as part of this fork.
 
 
+## Classic spawn placement
+
+Classic uses the upstream single-player map-click spawn flow. During the spawn
+phase, a click is converted from screen coordinates to the original map tile
+reference and sent as a spawn intent. The client now filters out impassable
+terrain before sending that intent; the engine independently verifies that the
+chosen center is a valid, passable, unowned land tile before assigning
+territory. The initial territory continues to come from the upstream
+`getSpawnTiles` BFS around the selected center (the existing radius-4 spawn
+shape), and ownership remains tile-by-tile in the original game map.
+
+The spawn validation changes do not implement a new arbitrary placement UI,
+change the upstream radius, or add incremental expansion rules. Those remain
+separate work items and require playtesting against the real World4000 map.
+
 ## Runtime wiring status
 
 The five campaign difficulty profiles in `RealmModes.ts` are currently
