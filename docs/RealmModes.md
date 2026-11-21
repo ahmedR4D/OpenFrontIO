@@ -100,3 +100,23 @@ launchable choice and defaults to the stock `World4000` map. Murim and Fantasy
 are deliberately disabled in the picker until their generated terrain assets
 and map-generator registrations exist. Selecting a placeholder must never
 silently start a different campaign.
+
+## Map-backed campaign structures
+
+The campaign API now has a tile-aware construction path. A structure created
+with `buildRealmStructureAt` records its original OpenFront `TileRef` and
+requires that tile to be owned by the player at construction time. A second
+structure cannot occupy the same tile. The
+`createRealmTerritoryAccess` adapter reads `Player.numTilesOwned()` and
+`Player.tiles().has(tile)`, so ownership comes from the engine's existing
+territory set rather than a parallel campaign map.
+
+Use `produceRealmResourcesOnOwnedTiles` for map-backed production. It only
+counts structures with a recorded tile that is still owned by the player;
+legacy structures without a tile reference do not produce through this path.
+The older location-free build/production helpers remain for compatibility.
+
+This is an engine-API foundation with unit coverage, not yet a live gameplay
+integration: no HUD build command, placement preview, persistence, or campaign
+turn scheduler currently calls these APIs. Capturing a structure tile also
+stops production when the ownership-filtered production function is used.
