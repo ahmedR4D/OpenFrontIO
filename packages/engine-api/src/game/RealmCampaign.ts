@@ -4,6 +4,10 @@ import type { RealmModeId } from "./RealmModes";
 /** Minimal live ownership view exposed by the OpenFront player model. */
 export interface RealmTerritorySource {
   numTilesOwned(): number;
+}
+
+/** Ownership lookup needed when placing or producing map structures. */
+export interface RealmBuildTerritorySource {
   ownsTile(tile: TileRef): boolean;
 }
 
@@ -516,7 +520,7 @@ export function produceRealmResources(
 export function produceRealmResourcesOnOwnedTiles(
   buildings: readonly RealmBuilding[],
   mode: RealmModeId,
-  territory: RealmTerritorySource,
+  territory: RealmBuildTerritorySource,
 ): Partial<RealmResourceStock> {
   return produceRealmResources(
     buildings.filter(
