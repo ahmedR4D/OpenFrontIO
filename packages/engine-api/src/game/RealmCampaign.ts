@@ -257,7 +257,10 @@ export interface RealmTurnReport {
  * This is a standalone campaign simulation layer and is not yet wired to the
  * real-time OpenFront tick or territory production.
  */
-export function advanceRealmCampaignTurn(state: RealmCampaignState): {
+export function advanceRealmCampaignTurn(
+  state: RealmCampaignState,
+  territory?: RealmBuildTerritorySource,
+): {
   state: RealmCampaignState;
   report: RealmTurnReport;
 } {
@@ -279,7 +282,20 @@ export function advanceRealmCampaignTurn(state: RealmCampaignState): {
   const actualFoodConsumed = Math.min(availableFood, foodConsumed);
   next.resources.food = Math.max(0, availableFood - actualFoodConsumed);
 
-  const production = produceRealmResources(next.buildings, next.mode);
+  // Map-backed structures must be checked against live ownership every turn.
+  // Without a live territory source, only legacy location-free structures are
+  // eligible; map-backed structures never produce from stale ownership data.
+  const production =
+    territory === undefined
+      ? produceRealmResources(
+          next.buildings.filter((building) => building.tileRef === undefined),
+          next.mode,
+        )
+      : produceRealmResourcesOnOwnedTiles(
+          next.buildings,
+          next.mode,
+          territory,
+        );
   for (const [resource, amount] of Object.entries(production) as [
     keyof RealmResourceStock,
     number,
