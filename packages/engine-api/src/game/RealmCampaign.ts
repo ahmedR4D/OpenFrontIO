@@ -148,6 +148,11 @@ export interface RealmCampaignState {
 const clamp01 = (value: number): number =>
   Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
 
+/** Keep engine-provided territory counts finite and non-negative. */
+function normalizeTerritoryCount(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+}
+
 /**
  * Computes a transparent stability estimate from actionable domestic causes.
  * All inputs are normalized to 0..1; taxRate is the share of income collected.
@@ -268,7 +273,7 @@ export function advanceRealmCampaignTurn(
     ...state,
     territoryTiles:
       territory && typeof territory.numTilesOwned === "function"
-        ? Math.max(0, Math.floor(territory.numTilesOwned()))
+        ? normalizeTerritoryCount(territory.numTilesOwned())
         : state.territoryTiles,
     resources: { ...state.resources },
     population: { ...state.population },
@@ -362,7 +367,7 @@ export function syncRealmTerritory(
 ): RealmCampaignState {
   return {
     ...state,
-    territoryTiles: Math.max(0, Math.floor(player.numTilesOwned())),
+    territoryTiles: normalizeTerritoryCount(player.numTilesOwned()),
   };
 }
 
