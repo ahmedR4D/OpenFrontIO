@@ -7,6 +7,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: realm-format-repair
+  cancel-in-progress: true
+
 jobs:
   format:
     runs-on: ubuntu-latest
