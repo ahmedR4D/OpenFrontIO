@@ -53,3 +53,12 @@ not silently alter map terrain or tile ownership semantics.
 Keep the upstream AGPL-3.0 source notices intact. Open assets under
 `/resources` are CC BY-SA 4.0 and require attribution. Do not copy or depend on
 `/proprietary` or externally hosted proprietary assets as part of this fork.
+
+
+## Current UI integration
+
+The single-player setup now shows a campaign-world picker. Classic is the only
+launchable choice and defaults to the stock `World4000` map. Murim and Fantasy
+are deliberately disabled in the picker until their generated terrain assets
+and map-generator registrations exist. Selecting a placeholder must never
+silently start a different campaign.
