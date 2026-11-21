@@ -288,7 +288,6 @@ describe("map-backed realm structure upgrades", () => {
     expect(built.buildings[0].level).toBe(1);
   });
 
-
   it("does not allow bypassing ownership checks through the legacy upgrade API", async () => {
     const { upgradeRealmStructure, buildRealmStructureAt } =
       await import("@openfront/engine-api/game/RealmCampaign");
@@ -297,7 +296,9 @@ describe("map-backed realm structure upgrades", () => {
       ownsTile: () => true,
     })!;
 
-    expect(upgradeRealmStructure(built, built.buildings[0].id)).toBeNull();
+    expect(
+      upgradeRealmStructure(built, built.buildings[0].id),
+    ).toBeNull();
     expect(built.buildings[0].level).toBe(1);
   });
 
