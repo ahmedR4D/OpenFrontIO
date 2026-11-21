@@ -1,3 +1,4 @@
+import { REALM_MODES, type RealmModeId } from "@openfront/engine-api/game/RealmModes";
 import {
   Difficulty,
   GameMapSize,
@@ -129,7 +130,7 @@ const TUTORIAL_DISABLED_UNITS: UnitType[] = [
 ];
 
 const DEFAULT_OPTIONS = {
-  selectedMap: GameMapType.World,
+  selectedMap: GameMapType.World4000,
   selectedDifficulty: Difficulty.Easy,
   bots: 400,
   infiniteGold: false,
@@ -202,6 +203,7 @@ async function loadAchievementEligibleMaps(): Promise<Set<GameMapType> | null> {
 export class SinglePlayerModal extends BaseModal {
   protected routerName = "single-player";
 
+  @state() private selectedRealmMode: RealmModeId = "classic";
   @state() private selectedMap: GameMapType = DEFAULT_OPTIONS.selectedMap;
   @state() private selectedDifficulty: Difficulty =
     DEFAULT_OPTIONS.selectedDifficulty;
@@ -461,6 +463,63 @@ export class SinglePlayerModal extends BaseModal {
     </div>`;
   }
 
+  private handleRealmModeSelection(mode: RealmModeId) {
+    // The generated Murim and Fantasy terrain assets are not registered yet.
+    // Keep those choices visible but unavailable until their maps are playable.
+    if (mode !== "classic") return;
+    this.selectedRealmMode = mode;
+    this.handleMapSelection(GameMapType.World4000);
+  }
+
+  private renderRealmModePicker(): TemplateResult {
+    return html`
+      <section class="mb-6 space-y-3">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-sm font-bold uppercase tracking-wider text-white/80">
+            Campaign world
+          </h3>
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-white/35">
+            Select a realm
+          </span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          ${Object.values(REALM_MODES).map((mode) => {
+            const available = mode.id === "classic";
+            const selected = this.selectedRealmMode === mode.id;
+            return html`
+              <button
+                type="button"
+                ?disabled=${!available}
+                @click=${() => this.handleRealmModeSelection(mode.id)}
+                aria-pressed=${selected}
+                class="relative rounded-xl border p-4 text-left transition-all ${selected
+                  ? "border-malibu-blue/60 bg-malibu-blue/15"
+                  : "border-white/10 bg-white/5"} ${available
+                  ? "hover:bg-white/10 cursor-pointer"
+                  : "opacity-55 cursor-not-allowed"}"
+              >
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <span class="text-sm font-bold text-white">${mode.title}</span>
+                  <span class="text-[9px] font-bold uppercase tracking-wider ${available
+                    ? "text-malibu-blue"
+                    : "text-white/40"}">
+                    ${available ? "Available" : "Coming soon"}
+                  </span>
+                </div>
+                <p class="text-xs leading-relaxed text-white/55">
+                  ${mode.description}
+                </p>
+              </button>
+            `;
+          })}
+        </div>
+        <p class="text-[11px] text-white/40">
+          Murim and Fantasy require their generated world maps before they can be launched.
+        </p>
+      </section>
+    `;
+  }
+
   protected renderBody() {
     const inputCards = [
       html`<toggle-input-card
@@ -557,6 +616,7 @@ export class SinglePlayerModal extends BaseModal {
             @open-shared-save=${(e: CustomEvent<string>) =>
               (this.sharedSaveId = e.detail)}
           ></saved-games-panel>
+          ${this.renderRealmModePicker()}
           <game-config-settings
             class="block"
             .sectionGapClass=${"space-y-6"}
