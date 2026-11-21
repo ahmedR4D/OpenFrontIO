@@ -19,16 +19,12 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
-      - run: npx oxfmt
-      - name: Commit formatted files
+      - name: Format campaign files and remove temporary workflow
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add docs/RealmModes.md packages/engine-api/src/game/RealmCampaign.ts packages/engine-api/src/game/RealmModes.ts src/client/SinglePlayerModal.ts src/client/hud/layers/GameLeftSidebar.ts tests/core/game/RealmCampaign.test.ts tests/core/game/RealmModes.test.ts
-          fi
+          npx oxfmt docs/RealmModes.md packages/engine-api/src/game/RealmCampaign.ts packages/engine-api/src/game/RealmModes.ts src/client/SinglePlayerModal.ts src/client/hud/layers/GameLeftSidebar.ts tests/core/game/RealmCampaign.test.ts tests/core/game/RealmModes.test.ts
+          git add docs/RealmModes.md packages/engine-api/src/game/RealmCampaign.ts packages/engine-api/src/game/RealmModes.ts src/client/SinglePlayerModal.ts src/client/hud/layers/GameLeftSidebar.ts tests/core/game/RealmCampaign.test.ts tests/core/game/RealmModes.test.ts
           git rm .github/workflows/one-time-format.yml
-          git add -u
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "style: format realm campaign changes"
-            git push origin HEAD:dev/realms-expansion
-          fi
+          git push origin HEAD:dev/realms-expansion
