@@ -6,9 +6,28 @@ export interface RealmTerritorySource {
   numTilesOwned(): number;
 }
 
+/** Minimal live player surface needed to adapt OpenFront territory ownership. */
+export interface RealmPlayerTerritoryView {
+  numTilesOwned(): number;
+  tiles(): { has(tile: TileRef): boolean };
+}
+
 /** Ownership lookup needed when placing or producing map structures. */
 export interface RealmBuildTerritorySource {
   ownsTile(tile: TileRef): boolean;
+}
+
+/**
+ * Adapts an actual OpenFront Player to the campaign's read-only territory API.
+ * Player.tiles() is the authoritative ownership set maintained by the engine.
+ */
+export function createRealmTerritoryAccess(
+  player: RealmPlayerTerritoryView,
+): RealmTerritorySource & RealmBuildTerritorySource {
+  return {
+    numTilesOwned: () => player.numTilesOwned(),
+    ownsTile: (tile) => player.tiles().has(tile),
+  };
 }
 
 export type RealmResource =
