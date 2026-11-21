@@ -19,14 +19,16 @@ export const REALM_MODES: Readonly<Record<RealmModeId, RealmModeDefinition>> = {
   classic: {
     id: "classic",
     title: "Classic",
-    description: "OpenFront-style territorial strategy on the original World 4000 map.",
+    description:
+      "OpenFront-style territorial strategy on the original World 4000 map.",
     map: { kind: "stock", map: GameMapType.World4000 },
     systems: ["territory", "combat", "naval-transport", "bots"],
   },
   murim: {
     id: "murim",
     title: "Murim",
-    description: "A cultivation world of qi, sects, spirit herbs, breakthroughs, and rival schools.",
+    description:
+      "A cultivation world of qi, sects, spirit herbs, breakthroughs, and rival schools.",
     map: { kind: "generated", worldId: "murim-world" },
     systems: [
       "territory",
@@ -61,7 +63,12 @@ export const REALM_MODES: Readonly<Record<RealmModeId, RealmModeDefinition>> = {
   },
 } as const;
 
-export type RealmDifficultyId = "easy" | "normal" | "hard" | "expert" | "impossible";
+export type RealmDifficultyId =
+  | "easy"
+  | "normal"
+  | "hard"
+  | "expert"
+  | "impossible";
 
 export interface RealmDifficultyProfile {
   id: RealmDifficultyId;
@@ -77,8 +84,16 @@ export const REALM_DIFFICULTIES: Readonly<
   easy: { id: "easy", playerToBotPowerRatio: 3, botIntelligence: 0.5 },
   normal: { id: "normal", playerToBotPowerRatio: 1.5, botIntelligence: 0.75 },
   hard: { id: "hard", playerToBotPowerRatio: 1, botIntelligence: 1 },
-  expert: { id: "expert", playerToBotPowerRatio: 1 / 1.5, botIntelligence: 1.25 },
-  impossible: { id: "impossible", playerToBotPowerRatio: 0.5, botIntelligence: 1.5 },
+  expert: {
+    id: "expert",
+    playerToBotPowerRatio: 1 / 1.5,
+    botIntelligence: 1.25,
+  },
+  impossible: {
+    id: "impossible",
+    playerToBotPowerRatio: 0.5,
+    botIntelligence: 1.5,
+  },
 };
 
 export function getRealmMode(id: RealmModeId): RealmModeDefinition {

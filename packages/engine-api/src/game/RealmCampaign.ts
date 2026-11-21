@@ -207,7 +207,6 @@ export function createRealmCampaignState(
   };
 }
 
-
 export interface RealmTurnReport {
   turn: number;
   foodConsumed: number;
@@ -223,9 +222,10 @@ export interface RealmTurnReport {
  * This is a standalone campaign simulation layer and is not yet wired to the
  * real-time OpenFront tick or territory production.
  */
-export function advanceRealmCampaignTurn(
-  state: RealmCampaignState,
-): { state: RealmCampaignState; report: RealmTurnReport } {
+export function advanceRealmCampaignTurn(state: RealmCampaignState): {
+  state: RealmCampaignState;
+  report: RealmTurnReport;
+} {
   const next: RealmCampaignState = {
     ...state,
     resources: { ...state.resources },
@@ -259,9 +259,7 @@ export function advanceRealmCampaignTurn(
   next.resources.gold += taxIncome;
 
   const unemploymentRate =
-    population === 0
-      ? 0
-      : clamp01(next.population.unemployed / population);
+    population === 0 ? 0 : clamp01(next.population.unemployed / population);
   const foodPenalty = foodCoverage < 1 ? (1 - foodCoverage) * 0.2 : 0;
   const taxPenalty = Math.max(0, taxRate - 0.25) * 0.12;
   const satisfaction = clamp01(
@@ -326,7 +324,6 @@ export function updateRealmDomesticPolicy(
   };
 }
 
-
 export interface RealmBuildingCost {
   food: number;
   wood: number;
@@ -337,7 +334,11 @@ export interface RealmBuildingCost {
 
 const REALM_BUILDING_RULES: Record<
   RealmBuildingType,
-  { cost: RealmBuildingCost; produces: Partial<RealmResourceStock>; modes: RealmModeId[] }
+  {
+    cost: RealmBuildingCost;
+    produces: Partial<RealmResourceStock>;
+    modes: RealmModeId[];
+  }
 > = {
   farm: {
     cost: { food: 0, wood: 15, stone: 5, iron: 0, gold: 10 },
@@ -417,7 +418,9 @@ export function upgradeRealmStructure(
   state: RealmCampaignState,
   buildingId: string,
 ): RealmCampaignState | null {
-  const index = state.buildings.findIndex((building) => building.id === buildingId);
+  const index = state.buildings.findIndex(
+    (building) => building.id === buildingId,
+  );
   if (index < 0) return null;
   const building = state.buildings[index];
   const rule = REALM_BUILDING_RULES[building.type];

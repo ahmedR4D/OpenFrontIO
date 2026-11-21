@@ -1,4 +1,3 @@
-import { REALM_MODES, type RealmModeId } from "@openfront/engine-api/game/RealmModes";
 import {
   Difficulty,
   GameMapSize,
@@ -8,6 +7,10 @@ import {
   listedMaps,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
+import {
+  REALM_MODES,
+  type RealmModeId,
+} from "@openfront/engine-api/game/RealmModes";
 import type { SnapshotHeader } from "@openfront/engine-api/game/SnapshotHeader";
 import { MAX_BOTS, TeamCountConfig } from "@openfront/engine-api/Schemas";
 import { DoomsdayClockSpeed } from "@openfront/engine-lib/game/DoomsdayClock";
@@ -478,7 +481,9 @@ export class SinglePlayerModal extends BaseModal {
           <h3 class="text-sm font-bold uppercase tracking-wider text-white/80">
             Campaign world
           </h3>
-          <span class="text-[10px] font-semibold uppercase tracking-wider text-white/35">
+          <span
+            class="text-[10px] font-semibold uppercase tracking-wider text-white/35"
+          >
             Select a realm
           </span>
         </div>
@@ -492,17 +497,25 @@ export class SinglePlayerModal extends BaseModal {
                 ?disabled=${!available}
                 @click=${() => this.handleRealmModeSelection(mode.id)}
                 aria-pressed=${selected}
-                class="relative rounded-xl border p-4 text-left transition-all ${selected
-                  ? "border-malibu-blue/60 bg-malibu-blue/15"
-                  : "border-white/10 bg-white/5"} ${available
-                  ? "hover:bg-white/10 cursor-pointer"
-                  : "opacity-55 cursor-not-allowed"}"
+                class="relative rounded-xl border p-4 text-left transition-all ${
+                  selected
+                    ? "border-malibu-blue/60 bg-malibu-blue/15"
+                    : "border-white/10 bg-white/5"
+                } ${
+                  available
+                    ? "hover:bg-white/10 cursor-pointer"
+                    : "opacity-55 cursor-not-allowed"
+                }"
               >
                 <div class="flex items-center justify-between gap-2 mb-2">
-                  <span class="text-sm font-bold text-white">${mode.title}</span>
-                  <span class="text-[9px] font-bold uppercase tracking-wider ${available
-                    ? "text-malibu-blue"
-                    : "text-white/40"}">
+                  <span class="text-sm font-bold text-white"
+                    >${mode.title}</span
+                  >
+                  <span
+                    class="text-[9px] font-bold uppercase tracking-wider ${
+                      available ? "text-malibu-blue" : "text-white/40"
+                    }"
+                  >
                     ${available ? "Available" : "Coming soon"}
                   </span>
                 </div>
@@ -514,7 +527,8 @@ export class SinglePlayerModal extends BaseModal {
           })}
         </div>
         <p class="text-[11px] text-white/40">
-          Murim and Fantasy require their generated world maps before they can be launched.
+          Murim and Fantasy require their generated world maps before they can
+          be launched.
         </p>
       </section>
     `;

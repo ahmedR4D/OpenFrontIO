@@ -8,8 +8,8 @@ import { isCompactViewport } from "../../CompactViewport";
 import type { Controller } from "../../Controller";
 import { AlternateViewEvent } from "../../InputHandler";
 import { Platform } from "../../Platform";
-import { GoToPlayerEvent } from "../../TransformHandler";
 import { themeProvider } from "../../theme/ThemeProvider";
+import { GoToPlayerEvent } from "../../TransformHandler";
 import { getTranslatedPlayerTeamLabel, translateText } from "../../Utils";
 import type { GameView } from "../../view";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
@@ -138,7 +138,8 @@ export class GameLeftSidebar extends LitElement implements Controller {
   private goToMyLand(): void {
     const player =
       typeof this.game?.myPlayer === "function" ? this.game.myPlayer() : null;
-    if (typeof player?.hasSpawned !== "function" || !player.hasSpawned()) return;
+    if (typeof player?.hasSpawned !== "function" || !player.hasSpawned())
+      return;
     this.eventBus?.emit(new GoToPlayerEvent(player, 8));
   }
 
@@ -227,19 +228,21 @@ export class GameLeftSidebar extends LitElement implements Controller {
                 `
               : null
           }
-          ${this.hasSpawnedPlayer
-            ? html`
-                <button
-                  type="button"
-                  class="cursor-pointer px-2 py-1 text-xs font-semibold text-white bg-blue-700/70 hover:bg-blue-600 border border-blue-400/60 rounded-md transition-colors"
-                  @mousedown=${this.handleLeaderboardMouseDown}
-                  @click=${this.goToMyLand}
-                  title="Center camera on your territory"
-                >
-                  أرضي
-                </button>
-              `
-            : null}
+          ${
+            this.hasSpawnedPlayer
+              ? html`
+                  <button
+                    type="button"
+                    class="cursor-pointer px-2 py-1 text-xs font-semibold text-white bg-blue-700/70 hover:bg-blue-600 border border-blue-400/60 rounded-md transition-colors"
+                    @mousedown=${this.handleLeaderboardMouseDown}
+                    @click=${this.goToMyLand}
+                    title="Center camera on your territory"
+                  >
+                    أرضي
+                  </button>
+                `
+              : null
+          }
           <div
             class="cursor-pointer p-0.5 hover:bg-gray-600 border rounded-md transition-colors ${
               this.alternateView

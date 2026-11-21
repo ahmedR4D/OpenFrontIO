@@ -1,10 +1,10 @@
+import { GameMapType } from "@openfront/engine-api/game/Maps.gen";
 import {
   getRealmDifficulty,
   getRealmMode,
   REALM_DIFFICULTIES,
   REALM_MODES,
 } from "@openfront/engine-api/game/RealmModes";
-import { GameMapType } from "@openfront/engine-api/game/Maps.gen";
 import { describe, expect, it } from "vitest";
 
 describe("realm mode definitions", () => {

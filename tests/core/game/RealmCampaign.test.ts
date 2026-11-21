@@ -8,7 +8,9 @@ describe("realm campaign foundations", () => {
   it("initializes Murim and Fantasy with their distinct special resource", () => {
     expect(createRealmCampaignState("murim").resources.qi).toBeGreaterThan(0);
     expect(createRealmCampaignState("murim").resources.mana).toBe(0);
-    expect(createRealmCampaignState("fantasy").resources.mana).toBeGreaterThan(0);
+    expect(createRealmCampaignState("fantasy").resources.mana).toBeGreaterThan(
+      0,
+    );
     expect(createRealmCampaignState("fantasy").resources.qi).toBe(0);
   });
 
@@ -42,12 +44,10 @@ describe("realm campaign foundations", () => {
   });
 });
 
-
 describe("realm campaign turn simulation", () => {
   it("consumes food, collects taxes, grows population, and advances one month", async () => {
-    const { advanceRealmCampaignTurn } = await import(
-      "@openfront/engine-api/game/RealmCampaign"
-    );
+    const { advanceRealmCampaignTurn } =
+      await import("@openfront/engine-api/game/RealmCampaign");
     const initial = createRealmCampaignState("classic");
     const { state, report } = advanceRealmCampaignTurn(initial);
 
@@ -60,9 +60,8 @@ describe("realm campaign turn simulation", () => {
   });
 
   it("causes shortages and population decline when food stores are empty", async () => {
-    const { advanceRealmCampaignTurn } = await import(
-      "@openfront/engine-api/game/RealmCampaign"
-    );
+    const { advanceRealmCampaignTurn } =
+      await import("@openfront/engine-api/game/RealmCampaign");
     const initial = createRealmCampaignState("classic");
     initial.resources.food = 0;
     const { state, report } = advanceRealmCampaignTurn(initial);
@@ -73,9 +72,8 @@ describe("realm campaign turn simulation", () => {
   });
 
   it("clamps domestic policy inputs and preserves the original state", async () => {
-    const { updateRealmDomesticPolicy } = await import(
-      "@openfront/engine-api/game/RealmCampaign"
-    );
+    const { updateRealmDomesticPolicy } =
+      await import("@openfront/engine-api/game/RealmCampaign");
     const initial = createRealmCampaignState("murim");
     const updated = updateRealmDomesticPolicy(initial, {
       taxRate: 5,
@@ -90,12 +88,13 @@ describe("realm campaign turn simulation", () => {
   });
 });
 
-
 describe("realm structure upgrades", () => {
   it("increases a building level and scales its production", async () => {
-    const { advanceRealmCampaignTurn, buildRealmStructure, upgradeRealmStructure } = await import(
-      "@openfront/engine-api/game/RealmCampaign"
-    );
+    const {
+      advanceRealmCampaignTurn,
+      buildRealmStructure,
+      upgradeRealmStructure,
+    } = await import("@openfront/engine-api/game/RealmCampaign");
     const initial = createRealmCampaignState("classic");
     const built = buildRealmStructure(initial, "farm")!;
     const upgraded = upgradeRealmStructure(built, built.buildings[0].id)!;
@@ -110,9 +109,8 @@ describe("realm structure upgrades", () => {
   });
 
   it("rejects missing, capped, or unaffordable upgrades without mutation", async () => {
-    const { buildRealmStructure, upgradeRealmStructure } = await import(
-      "@openfront/engine-api/game/RealmCampaign"
-    );
+    const { buildRealmStructure, upgradeRealmStructure } =
+      await import("@openfront/engine-api/game/RealmCampaign");
     const initial = createRealmCampaignState("classic");
     expect(upgradeRealmStructure(initial, "missing")).toBeNull();
 
@@ -129,9 +127,8 @@ describe("realm structure upgrades", () => {
   });
 
   it("does not allow upgrading a structure that is invalid for the selected realm", async () => {
-    const { upgradeRealmStructure } = await import(
-      "@openfront/engine-api/game/RealmCampaign"
-    );
+    const { upgradeRealmStructure } =
+      await import("@openfront/engine-api/game/RealmCampaign");
     const state = createRealmCampaignState("classic");
     state.buildings = [{ id: "mana-1", type: "manaSanctum", level: 1 }];
     expect(upgradeRealmStructure(state, "mana-1")).toBeNull();

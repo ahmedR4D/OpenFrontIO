@@ -22,12 +22,12 @@ and registered before those modes can be launched.
 The player-to-bot power ratio is explicit and testable:
 
 | Difficulty | Player / bot power |
-| --- | ---: |
-| Easy | 3.0 |
-| Normal | 1.5 |
-| Hard | 1.0 |
-| Expert | 0.667 |
-| Impossible | 0.5 |
+| ---------- | -----------------: |
+| Easy       |                3.0 |
+| Normal     |                1.5 |
+| Hard       |                1.0 |
+| Expert     |              0.667 |
+| Impossible |                0.5 |
 
 Bot starting power must be rolled independently per bot within the selected
 mode's configured bounds. Difficulty also controls planning quality; it must
@@ -53,7 +53,6 @@ not silently alter map terrain or tile ownership semantics.
 Keep the upstream AGPL-3.0 source notices intact. Open assets under
 `/resources` are CC BY-SA 4.0 and require attribution. Do not copy or depend on
 `/proprietary` or externally hosted proprietary assets as part of this fork.
-
 
 ## Domestic economy turn foundation
 
