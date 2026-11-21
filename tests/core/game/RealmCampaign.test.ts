@@ -1,6 +1,7 @@
 import {
   calculateRealmStability,
   createRealmCampaignState,
+  createRealmTerritoryAccess,
   syncRealmTerritory,
   buildRealmStructureAt,
   produceRealmResourcesOnOwnedTiles,
@@ -204,5 +205,20 @@ describe("map-backed realm structures", () => {
         ownsTile: () => true,
       }).food,
     ).toBeUndefined();
+  });
+});
+
+describe("OpenFront player territory adapter", () => {
+  it("reads tile membership and tile count from the actual player view", () => {
+    const ownedTiles = new Set([4, 9, 15]);
+    const player = {
+      numTilesOwned: () => ownedTiles.size,
+      tiles: () => ownedTiles,
+    };
+    const territory = createRealmTerritoryAccess(player);
+
+    expect(territory.numTilesOwned()).toBe(3);
+    expect(territory.ownsTile(9)).toBe(true);
+    expect(territory.ownsTile(10)).toBe(false);
   });
 });
