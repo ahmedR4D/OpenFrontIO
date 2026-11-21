@@ -477,6 +477,34 @@ export function buildRealmStructure(
 }
 
 /**
+ * Build a structure on a specific OpenFront tile.
+ * The tile must still belong to the player and may host only one structure.
+ */
+export function buildRealmStructureAt(
+  state: RealmCampaignState,
+  type: RealmBuildingType,
+  tile: TileRef,
+  territory: RealmBuildTerritorySource,
+): RealmCampaignState | null {
+  if (!territory.ownsTile(tile)) return null;
+  if (state.buildings.some((building) => building.tileRef === tile)) {
+    return null;
+  }
+
+  const built = buildRealmStructure(state, type);
+  if (built === null) return null;
+
+  const building = built.buildings[built.buildings.length - 1];
+  return {
+    ...built,
+    buildings: [
+      ...built.buildings.slice(0, -1),
+      { ...building, tileRef: tile },
+    ],
+  };
+}
+
+/**
  * Upgrade an existing structure. Each level costs more than the previous one;
  * level 10 is the campaign cap. The input state is never mutated.
  */
