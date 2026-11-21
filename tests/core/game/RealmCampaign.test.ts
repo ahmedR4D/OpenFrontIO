@@ -267,3 +267,35 @@ describe("OpenFront player territory adapter", () => {
     expect(territory.ownsTile(10)).toBe(false);
   });
 });
+
+
+describe("map-backed realm structure upgrades", () => {
+  it("allows upgrades only while the structure tile remains owned", async () => {
+    const { upgradeRealmStructureAt, buildRealmStructureAt } =
+      await import("@openfront/engine-api/game/RealmCampaign");
+    const initial = createRealmCampaignState("classic");
+    const owned = { ownsTile: (tile: number) => tile === 77 };
+    const built = buildRealmStructureAt(initial, "farm", 77, owned)!;
+
+    const upgraded = upgradeRealmStructureAt(built, built.buildings[0].id, owned);
+    expect(upgraded?.buildings[0].level).toBe(2);
+    expect(upgraded?.resources.wood).toBe(built.resources.wood - 15);
+
+    const lost = upgradeRealmStructureAt(built, built.buildings[0].id, {
+      ownsTile: () => false,
+    });
+    expect(lost).toBeNull();
+    expect(built.buildings[0].level).toBe(1);
+  });
+
+  it("rejects upgrades through the map-aware path for legacy structures", async () => {
+    const { upgradeRealmStructureAt } =
+      await import("@openfront/engine-api/game/RealmCampaign");
+    const initial = createRealmCampaignState("classic");
+    initial.buildings = [{ id: "old-farm", type: "farm", level: 1 }];
+
+    expect(
+      upgradeRealmStructureAt(initial, "old-farm", { ownsTile: () => true }),
+    ).toBeNull();
+  });
+});
