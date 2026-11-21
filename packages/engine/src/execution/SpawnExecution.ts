@@ -137,14 +137,14 @@ export class SpawnExecution implements Execution {
 
   private getSpawn(center?: TileRef): Spawn | undefined {
     if (center !== undefined) {
-      // A player-selected spawn must be a real, passable, unowned land tile.
-      // Do not let a nearby shoreline make an ocean click look like a valid
-      // spawn, and do not allow a second player to anchor a spawn on owned land.
+      // A selected spawn must be a real, passable land tile. Only client
+      // intents are restricted to unowned centers; trusted server-side spawns
+      // may deliberately resolve close to existing territory.
       if (
         !this.mg.isValidRef(center) ||
         !this.mg.isLand(center) ||
         this.mg.isImpassable(center) ||
-        this.mg.hasOwner(center)
+        (this.fromIntent && this.mg.hasOwner(center))
       ) {
         return;
       }
