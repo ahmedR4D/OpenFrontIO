@@ -139,6 +139,7 @@ describe("realm structure upgrades", () => {
   });
 });
 
+describe("realm campaign territory turn integration", () => {
   it("normalizes invalid live territory counts to zero", async () => {
     const { syncRealmTerritory } =
       await import("@openfront/engine-api/game/RealmCampaign");
@@ -180,6 +181,7 @@ describe("realm structure upgrades", () => {
     expect(withoutOwnershipView.state.resources.food).toBe(lostTurn.state.resources.food);
     expect(built.turn).toBe(0);
   });
+});
 
 describe("realm territory synchronization", () => {
   it(
