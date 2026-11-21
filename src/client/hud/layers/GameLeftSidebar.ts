@@ -8,6 +8,7 @@ import { isCompactViewport } from "../../CompactViewport";
 import type { Controller } from "../../Controller";
 import { AlternateViewEvent } from "../../InputHandler";
 import { Platform } from "../../Platform";
+import { GoToPlayerEvent } from "../../TransformHandler";
 import { themeProvider } from "../../theme/ThemeProvider";
 import { getTranslatedPlayerTeamLabel, translateText } from "../../Utils";
 import type { GameView } from "../../view";
@@ -128,6 +129,12 @@ export class GameLeftSidebar extends LitElement implements Controller {
     this.eventBus?.emit(new AlternateViewEvent(!this.alternateView));
   }
 
+  private goToMyLand(): void {
+    const player = this.game?.myPlayer();
+    if (!player?.hasSpawned()) return;
+    this.eventBus?.emit(new GoToPlayerEvent(player, 8));
+  }
+
   private get isTeamGame(): boolean {
     return this.game?.config().gameConfig().gameMode === GameMode.Team;
   }
@@ -213,6 +220,19 @@ export class GameLeftSidebar extends LitElement implements Controller {
                 `
               : null
           }
+          ${this.game?.myPlayer()?.hasSpawned()
+            ? html`
+                <button
+                  type="button"
+                  class="cursor-pointer px-2 py-1 text-xs font-semibold text-white bg-blue-700/70 hover:bg-blue-600 border border-blue-400/60 rounded-md transition-colors"
+                  @mousedown=${this.handleLeaderboardMouseDown}
+                  @click=${this.goToMyLand}
+                  title="Center camera on your territory"
+                >
+                  أرضي
+                </button>
+              `
+            : null}
           <div
             class="cursor-pointer p-0.5 hover:bg-gray-600 border rounded-md transition-colors ${
               this.alternateView
