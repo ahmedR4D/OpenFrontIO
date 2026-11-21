@@ -565,6 +565,26 @@ export function upgradeRealmStructure(
   };
 }
 
+/**
+ * Upgrade a map-backed structure only while its tile is still owned.
+ * Location-free legacy structures are intentionally excluded from this path.
+ */
+export function upgradeRealmStructureAt(
+  state: RealmCampaignState,
+  buildingId: string,
+  territory: RealmBuildTerritorySource,
+): RealmCampaignState | null {
+  const building = state.buildings.find((item) => item.id === buildingId);
+  if (
+    building === undefined ||
+    building.tileRef === undefined ||
+    !territory.ownsTile(building.tileRef)
+  ) {
+    return null;
+  }
+  return upgradeRealmStructure(state, buildingId);
+}
+
 /** Adds deterministic per-turn output from owned campaign structures. */
 export function produceRealmResources(
   buildings: readonly RealmBuilding[],
