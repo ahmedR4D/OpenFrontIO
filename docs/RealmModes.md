@@ -55,6 +55,20 @@ Keep the upstream AGPL-3.0 source notices intact. Open assets under
 `/proprietary` or externally hosted proprietary assets as part of this fork.
 
 
+## Domestic economy turn foundation
+
+`RealmCampaign.ts` now exposes a deterministic monthly campaign-turn
+transition. It consumes food according to population and ration policy,
+collects tax income from employed population, applies food-shortage and
+high-tax satisfaction penalties, updates population growth or decline, and
+recomputes stability and actionable revolt causes. Policy updates are clamped
+to valid ranges and do not mutate the previous state.
+
+This is currently a standalone campaign model with unit tests. It is not yet
+connected to the live OpenFront match lifecycle, tile-based resource yields,
+construction, army upkeep, or an in-game management screen. The numeric rates
+are initial balancing constants and require playtesting.
+
 ## Classic spawn placement
 
 Classic uses the upstream single-player map-click spawn flow. During the spawn
