@@ -520,12 +520,20 @@ export function buildRealmStructureAt(
 export function upgradeRealmStructure(
   state: RealmCampaignState,
   buildingId: string,
+  territory?: RealmBuildTerritorySource,
 ): RealmCampaignState | null {
   const index = state.buildings.findIndex(
     (building) => building.id === buildingId,
   );
   if (index < 0) return null;
   const building = state.buildings[index];
+  // A map-backed structure must always prove current ownership before upgrade.
+  if (
+    building.tileRef !== undefined &&
+    (territory === undefined || !territory.ownsTile(building.tileRef))
+  ) {
+    return null;
+  }
   const rule = REALM_BUILDING_RULES[building.type];
   if (!rule.modes.includes(state.mode) || building.level >= 10) return null;
 
@@ -582,7 +590,7 @@ export function upgradeRealmStructureAt(
   ) {
     return null;
   }
-  return upgradeRealmStructure(state, buildingId);
+  return upgradeRealmStructure(state, buildingId, territory);
 }
 
 /** Adds deterministic per-turn output from owned campaign structures. */
