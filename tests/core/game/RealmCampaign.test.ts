@@ -139,6 +139,21 @@ describe("realm structure upgrades", () => {
   });
 });
 
+  it("refreshes the owned territory count when the live player adapter is supplied", async () => {
+    const { advanceRealmCampaignTurn } =
+      await import("@openfront/engine-api/game/RealmCampaign");
+    const initial = createRealmCampaignState("classic");
+    const liveTerritory = {
+      ownsTile: () => true,
+      numTilesOwned: () => 137,
+    };
+
+    const { state } = advanceRealmCampaignTurn(initial, liveTerritory);
+
+    expect(state.territoryTiles).toBe(137);
+    expect(initial.territoryTiles).toBe(0);
+  });
+
   it("uses live tile ownership for map-backed production during campaign turns", async () => {
     const { advanceRealmCampaignTurn, buildRealmStructureAt } =
       await import("@openfront/engine-api/game/RealmCampaign");
