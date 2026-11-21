@@ -190,3 +190,114 @@ export function createRealmCampaignState(
     activeEvents: [],
   };
 }
+
+
+export interface RealmTurnReport {
+  turn: number;
+  foodConsumed: number;
+  foodCoverage: number;
+  taxIncome: number;
+  populationChange: number;
+  stability: RealmStability;
+}
+
+/**
+ * Advances one abstract domestic-management turn.
+ * Rates are normalized to 0..1; one turn represents one campaign month.
+ * This is a standalone campaign simulation layer and is not yet wired to the
+ * real-time OpenFront tick or territory production.
+ */
+export function advanceRealmCampaignTurn(
+  state: RealmCampaignState,
+): { state: RealmCampaignState; report: RealmTurnReport } {
+  const next: RealmCampaignState = {
+    ...state,
+    resources: { ...state.resources },
+    population: { ...state.population },
+    policy: { ...state.policy },
+    factions: state.factions.map((faction) => ({ ...faction })),
+    activeEvents: [...state.activeEvents],
+  };
+
+  const population = Math.max(0, next.population.total);
+  const ration = Math.max(0, Math.min(2, next.policy.foodRation));
+  const foodConsumed = Math.ceil((population / 100) * 0.8 * ration);
+  const availableFood = Math.max(0, next.resources.food);
+  const foodCoverage =
+    foodConsumed === 0 ? 1 : Math.min(1, availableFood / foodConsumed);
+  const actualFoodConsumed = Math.min(availableFood, foodConsumed);
+  next.resources.food = Math.max(0, availableFood - actualFoodConsumed);
+
+  const taxRate = clamp01(next.policy.taxRate);
+  const taxIncome = Math.floor(
+    Math.max(0, next.population.employed) * 0.02 * taxRate,
+  );
+  next.resources.gold += taxIncome;
+
+  const unemploymentRate =
+    population === 0
+      ? 0
+      : clamp01(next.population.unemployed / population);
+  const foodPenalty = foodCoverage < 1 ? (1 - foodCoverage) * 0.2 : 0;
+  const taxPenalty = Math.max(0, taxRate - 0.25) * 0.12;
+  const satisfaction = clamp01(
+    next.satisfaction + 0.015 - foodPenalty - taxPenalty,
+  );
+  const populationChange =
+    foodCoverage < 0.5
+      ? -Math.ceil(population * 0.005)
+      : Math.floor(population * Math.max(0, next.population.monthlyGrowth));
+  next.population.total = Math.max(0, population + populationChange);
+
+  const stability = calculateRealmStability({
+    satisfaction,
+    foodCoverage,
+    taxRate,
+    warExhaustion: next.warExhaustion,
+    unemploymentRate,
+    legitimacy: next.legitimacy,
+  });
+  next.satisfaction = satisfaction;
+  next.stability = stability;
+  next.turn += 1;
+
+  return {
+    state: next,
+    report: {
+      turn: next.turn,
+      foodConsumed: actualFoodConsumed,
+      foodCoverage,
+      taxIncome,
+      populationChange,
+      stability,
+    },
+  };
+}
+
+/** Apply a domestic policy change without mutating the original campaign. */
+export function updateRealmDomesticPolicy(
+  state: RealmCampaignState,
+  policy: Partial<RealmDomesticPolicy>,
+): RealmCampaignState {
+  return {
+    ...state,
+    policy: {
+      taxRate:
+        policy.taxRate === undefined
+          ? state.policy.taxRate
+          : clamp01(policy.taxRate),
+      foodRation:
+        policy.foodRation === undefined
+          ? state.policy.foodRation
+          : Math.max(0, Math.min(2, policy.foodRation)),
+      conscriptionRate:
+        policy.conscriptionRate === undefined
+          ? state.policy.conscriptionRate
+          : clamp01(policy.conscriptionRate),
+      publicWorks:
+        policy.publicWorks === undefined
+          ? state.policy.publicWorks
+          : Math.max(0, Math.min(1, policy.publicWorks)),
+    },
+  };
+}
