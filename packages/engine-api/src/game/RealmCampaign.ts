@@ -409,6 +409,56 @@ export function buildRealmStructure(
   };
 }
 
+/**
+ * Upgrade an existing structure. Each level costs more than the previous one;
+ * level 10 is the campaign cap. The input state is never mutated.
+ */
+export function upgradeRealmStructure(
+  state: RealmCampaignState,
+  buildingId: string,
+): RealmCampaignState | null {
+  const index = state.buildings.findIndex((building) => building.id === buildingId);
+  if (index < 0) return null;
+  const building = state.buildings[index];
+  const rule = REALM_BUILDING_RULES[building.type];
+  if (!rule.modes.includes(state.mode) || building.level >= 10) return null;
+
+  const nextLevel = building.level + 1;
+  const multiplier = building.level;
+  const cost: RealmBuildingCost = {
+    food: rule.cost.food * multiplier,
+    wood: rule.cost.wood * multiplier,
+    stone: rule.cost.stone * multiplier,
+    iron: rule.cost.iron * multiplier,
+    gold: rule.cost.gold * multiplier,
+  };
+  if (
+    state.resources.food < cost.food ||
+    state.resources.wood < cost.wood ||
+    state.resources.stone < cost.stone ||
+    state.resources.iron < cost.iron ||
+    state.resources.gold < cost.gold
+  ) {
+    return null;
+  }
+
+  const buildings = state.buildings.map((item, itemIndex) =>
+    itemIndex === index ? { ...item, level: nextLevel } : item,
+  );
+  return {
+    ...state,
+    resources: {
+      ...state.resources,
+      food: state.resources.food - cost.food,
+      wood: state.resources.wood - cost.wood,
+      stone: state.resources.stone - cost.stone,
+      iron: state.resources.iron - cost.iron,
+      gold: state.resources.gold - cost.gold,
+    },
+    buildings,
+  };
+}
+
 /** Adds deterministic per-turn output from owned campaign structures. */
 export function produceRealmResources(
   buildings: readonly RealmBuilding[],
