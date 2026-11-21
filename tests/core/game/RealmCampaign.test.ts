@@ -2,6 +2,8 @@ import {
   calculateRealmStability,
   createRealmCampaignState,
   syncRealmTerritory,
+  buildRealmStructureAt,
+  produceRealmResourcesOnOwnedTiles,
 } from "@openfront/engine-api/game/RealmCampaign";
 import { describe, expect, it } from "vitest";
 
@@ -156,5 +158,51 @@ describe("realm territory synchronization", () => {
     expect(
       syncRealmTerritory(initial, { numTilesOwned: () => 12.9 }).territoryTiles,
     ).toBe(12);
+  });
+});
+
+describe("map-backed realm structures", () => {
+  it("builds only on a currently owned tile and records its map reference", () => {
+    const initial = createRealmCampaignState("classic");
+    const territory = { ownsTile: (tile: number) => tile === 42 };
+    const built = buildRealmStructureAt(initial, "farm", 42, territory);
+
+    expect(built?.buildings[0].tileRef).toBe(42);
+    expect(buildRealmStructureAt(initial, "farm", 43, territory)).toBeNull();
+    expect(initial.buildings).toHaveLength(0);
+  });
+
+  it("prevents two structures from occupying the same map tile", () => {
+    const initial = createRealmCampaignState("classic");
+    const territory = { ownsTile: () => true };
+    const first = buildRealmStructureAt(initial, "farm", 42, territory)!;
+
+    expect(
+      buildRealmStructureAt(first, "lumberMill", 42, territory),
+    ).toBeNull();
+  });
+
+  it("stops production as soon as the structure tile is no longer owned", () => {
+    const initial = createRealmCampaignState("classic");
+    const owned = { ownsTile: (tile: number) => tile === 42 };
+    const built = buildRealmStructureAt(initial, "farm", 42, owned)!;
+    const lost = { ownsTile: () => false };
+
+    expect(
+      produceRealmResourcesOnOwnedTiles(built.buildings, "classic", owned).food,
+    ).toBe(30);
+    expect(
+      produceRealmResourcesOnOwnedTiles(built.buildings, "classic", lost).food,
+    ).toBeUndefined();
+  });
+
+  it("does not produce from legacy structures without a map location", () => {
+    const initial = createRealmCampaignState("classic");
+    initial.buildings = [{ id: "legacy-farm", type: "farm", level: 1 }];
+    expect(
+      produceRealmResourcesOnOwnedTiles(initial.buildings, "classic", {
+        ownsTile: () => true,
+      }).food,
+    ).toBeUndefined();
   });
 });
