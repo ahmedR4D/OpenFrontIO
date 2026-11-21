@@ -129,9 +129,16 @@ export class GameLeftSidebar extends LitElement implements Controller {
     this.eventBus?.emit(new AlternateViewEvent(!this.alternateView));
   }
 
+  private get hasSpawnedPlayer(): boolean {
+    const player =
+      typeof this.game?.myPlayer === "function" ? this.game.myPlayer() : null;
+    return typeof player?.hasSpawned === "function" && player.hasSpawned();
+  }
+
   private goToMyLand(): void {
-    const player = this.game?.myPlayer();
-    if (!player?.hasSpawned()) return;
+    const player =
+      typeof this.game?.myPlayer === "function" ? this.game.myPlayer() : null;
+    if (typeof player?.hasSpawned !== "function" || !player.hasSpawned()) return;
     this.eventBus?.emit(new GoToPlayerEvent(player, 8));
   }
 
@@ -220,7 +227,7 @@ export class GameLeftSidebar extends LitElement implements Controller {
                 `
               : null
           }
-          ${this.game?.myPlayer()?.hasSpawned()
+          ${this.hasSpawnedPlayer
             ? html`
                 <button
                   type="button"
