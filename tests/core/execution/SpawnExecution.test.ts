@@ -126,17 +126,17 @@ describe("Spawn execution", () => {
     expect(landTile).toEqual(expect.any(Number));
     expect(waterTile).toEqual(expect.any(Number));
 
-    game.addExecution(new SpawnExecution("game_id", first, landTile));
+    game.addExecution(new SpawnExecution("game_id", first, landTile, true));
     game.executeNextTick();
     game.executeNextTick();
     expect(game.playerByClientID("client_first")!.hasSpawned()).toBe(true);
 
-    game.addExecution(new SpawnExecution("game_id", second, waterTile));
+    game.addExecution(new SpawnExecution("game_id", second, waterTile, true));
     game.executeNextTick();
     game.executeNextTick();
     expect(game.playerByClientID("client_second")!.hasSpawned()).toBe(false);
 
-    game.addExecution(new SpawnExecution("game_id", second, landTile));
+    game.addExecution(new SpawnExecution("game_id", second, landTile, true));
     game.executeNextTick();
     game.executeNextTick();
     expect(game.playerByClientID("client_second")!.hasSpawned()).toBe(false);
