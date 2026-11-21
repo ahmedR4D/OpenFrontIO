@@ -1,8 +1,10 @@
+import type { TileRef } from "./GameMap";
 import type { RealmModeId } from "./RealmModes";
 
 /** Minimal live ownership view exposed by the OpenFront player model. */
 export interface RealmTerritorySource {
   numTilesOwned(): number;
+  ownsTile(tile: TileRef): boolean;
 }
 
 export type RealmResource =
@@ -99,6 +101,8 @@ export interface RealmBuilding {
   id: string;
   type: RealmBuildingType;
   level: number;
+  /** OpenFront map tile occupied by this structure; absent only on legacy records. */
+  tileRef?: TileRef;
 }
 
 export interface RealmCampaignState {
@@ -503,4 +507,22 @@ export function produceRealmResources(
     }
   }
   return output;
+}
+
+/**
+ * Produces only from structures whose map tiles are still owned by the player.
+ * Captured or lost structures stop contributing immediately.
+ */
+export function produceRealmResourcesOnOwnedTiles(
+  buildings: readonly RealmBuilding[],
+  mode: RealmModeId,
+  territory: RealmTerritorySource,
+): Partial<RealmResourceStock> {
+  return produceRealmResources(
+    buildings.filter(
+      (building) =>
+        building.tileRef !== undefined && territory.ownsTile(building.tileRef),
+    ),
+    mode,
+  );
 }
