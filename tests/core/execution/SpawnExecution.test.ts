@@ -88,6 +88,60 @@ describe("Spawn execution", () => {
     ).toBe(2);
   });
 
+  test("Rejects selected spawn centers that are water or already owned", async () => {
+    const first = new PlayerInfo(
+      "first",
+      PlayerType.Human,
+      "client_first",
+      "player_first",
+    );
+    const second = new PlayerInfo(
+      "second",
+      PlayerType.Human,
+      "client_second",
+      "player_second",
+    );
+    const game = await setup("half_land_half_ocean", {}, [first, second]);
+
+    let landTile: number | undefined;
+    let waterTile: number | undefined;
+    for (let y = 0; y < game.height(); y++) {
+      for (let x = 0; x < game.width(); x++) {
+        const tile = game.ref(x, y);
+        if (
+          landTile === undefined &&
+          game.isLand(tile) &&
+          !game.isImpassable(tile)
+        ) {
+          landTile = tile;
+        }
+        if (waterTile === undefined && !game.isLand(tile)) {
+          waterTile = tile;
+        }
+        if (landTile !== undefined && waterTile !== undefined) break;
+      }
+      if (landTile !== undefined && waterTile !== undefined) break;
+    }
+
+    expect(landTile).toEqual(expect.any(Number));
+    expect(waterTile).toEqual(expect.any(Number));
+
+    game.addExecution(new SpawnExecution("game_id", first, landTile));
+    game.executeNextTick();
+    game.executeNextTick();
+    expect(game.playerByClientID("client_first")!.hasSpawned()).toBe(true);
+
+    game.addExecution(new SpawnExecution("game_id", second, waterTile));
+    game.executeNextTick();
+    game.executeNextTick();
+    expect(game.playerByClientID("client_second")!.hasSpawned()).toBe(false);
+
+    game.addExecution(new SpawnExecution("game_id", second, landTile));
+    game.executeNextTick();
+    game.executeNextTick();
+    expect(game.playerByClientID("client_second")!.hasSpawned()).toBe(false);
+  });
+
   test("Spawn on specific tile", async () => {
     const playerInfo = new PlayerInfo(
       `player`,
