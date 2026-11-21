@@ -1,5 +1,10 @@
 import type { RealmModeId } from "./RealmModes";
 
+/** Minimal live ownership view exposed by the OpenFront player model. */
+export interface RealmTerritorySource {
+  numTilesOwned(): number;
+}
+
 export type RealmResource =
   | "food"
   | "wood"
@@ -98,6 +103,8 @@ export interface RealmBuilding {
 
 export interface RealmCampaignState {
   mode: RealmModeId;
+  /** Last synchronized count of tiles owned in the real OpenFront map. */
+  territoryTiles: number;
   buildings: RealmBuilding[];
   turn: number;
   resources: RealmResourceStock;
@@ -173,6 +180,7 @@ export function createRealmCampaignState(
 
   return {
     mode,
+    territoryTiles: 0,
     buildings: [],
     turn: 0,
     resources: {
@@ -293,6 +301,21 @@ export function advanceRealmCampaignTurn(state: RealmCampaignState): {
       populationChange,
       stability,
     },
+  };
+}
+
+/**
+ * Synchronize campaign territory with the live OpenFront player model.
+ * This deliberately reads the engine-owned tile count instead of maintaining
+ * a second, approximate territory grid inside the campaign simulation.
+ */
+export function syncRealmTerritory(
+  state: RealmCampaignState,
+  player: RealmTerritorySource,
+): RealmCampaignState {
+  return {
+    ...state,
+    territoryTiles: Math.max(0, Math.floor(player.numTilesOwned())),
   };
 }
 
