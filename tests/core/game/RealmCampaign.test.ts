@@ -139,6 +139,22 @@ describe("realm structure upgrades", () => {
   });
 });
 
+  it("uses live tile ownership for map-backed production during campaign turns", async () => {
+    const { advanceRealmCampaignTurn, buildRealmStructureAt } =
+      await import("@openfront/engine-api/game/RealmCampaign");
+    const initial = createRealmCampaignState("classic");
+    const owned = { ownsTile: (tile: number) => tile === 42 };
+    const built = buildRealmStructureAt(initial, "farm", 42, owned)!;
+
+    const producingTurn = advanceRealmCampaignTurn(built, owned);
+    const lostTurn = advanceRealmCampaignTurn(built, { ownsTile: () => false });
+    const withoutOwnershipView = advanceRealmCampaignTurn(built);
+
+    expect(producingTurn.state.resources.food - lostTurn.state.resources.food).toBe(30);
+    expect(withoutOwnershipView.state.resources.food).toBe(lostTurn.state.resources.food);
+    expect(built.turn).toBe(0);
+  });
+
 describe("realm territory synchronization", () => {
   it(
     "uses the live OpenFront player ownership count without mutating the campaign",
