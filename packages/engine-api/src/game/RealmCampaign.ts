@@ -82,8 +82,23 @@ export interface RealmFaction {
   leaderId?: string;
 }
 
+export type RealmBuildingType =
+  | "farm"
+  | "lumberMill"
+  | "quarry"
+  | "ironMine"
+  | "spiritGarden"
+  | "manaSanctum";
+
+export interface RealmBuilding {
+  id: string;
+  type: RealmBuildingType;
+  level: number;
+}
+
 export interface RealmCampaignState {
   mode: RealmModeId;
+  buildings: RealmBuilding[];
   turn: number;
   resources: RealmResourceStock;
   population: RealmPopulation;
@@ -158,6 +173,7 @@ export function createRealmCampaignState(
 
   return {
     mode,
+    buildings: [],
     turn: 0,
     resources: {
       food: 100,
@@ -227,6 +243,14 @@ export function advanceRealmCampaignTurn(
     foodConsumed === 0 ? 1 : Math.min(1, availableFood / foodConsumed);
   const actualFoodConsumed = Math.min(availableFood, foodConsumed);
   next.resources.food = Math.max(0, availableFood - actualFoodConsumed);
+
+  const production = produceRealmResources(next.buildings, next.mode);
+  for (const [resource, amount] of Object.entries(production) as [
+    keyof RealmResourceStock,
+    number,
+  ][]) {
+    next.resources[resource] += amount;
+  }
 
   const taxRate = clamp01(next.policy.taxRate);
   const taxIncome = Math.floor(
@@ -300,4 +324,107 @@ export function updateRealmDomesticPolicy(
           : Math.max(0, Math.min(1, policy.publicWorks)),
     },
   };
+}
+
+
+export interface RealmBuildingCost {
+  food: number;
+  wood: number;
+  stone: number;
+  iron: number;
+  gold: number;
+}
+
+const REALM_BUILDING_RULES: Record<
+  RealmBuildingType,
+  { cost: RealmBuildingCost; produces: Partial<RealmResourceStock>; modes: RealmModeId[] }
+> = {
+  farm: {
+    cost: { food: 0, wood: 15, stone: 5, iron: 0, gold: 10 },
+    produces: { food: 30 },
+    modes: ["classic", "murim", "fantasy"],
+  },
+  lumberMill: {
+    cost: { food: 0, wood: 10, stone: 5, iron: 0, gold: 15 },
+    produces: { wood: 18 },
+    modes: ["classic", "murim", "fantasy"],
+  },
+  quarry: {
+    cost: { food: 0, wood: 10, stone: 10, iron: 0, gold: 20 },
+    produces: { stone: 12 },
+    modes: ["classic", "murim", "fantasy"],
+  },
+  ironMine: {
+    cost: { food: 0, wood: 15, stone: 10, iron: 0, gold: 25 },
+    produces: { iron: 8 },
+    modes: ["classic", "murim", "fantasy"],
+  },
+  spiritGarden: {
+    cost: { food: 0, wood: 20, stone: 10, iron: 5, gold: 30 },
+    produces: { qi: 5, spiritHerbs: 2 },
+    modes: ["murim"],
+  },
+  manaSanctum: {
+    cost: { food: 0, wood: 20, stone: 15, iron: 5, gold: 35 },
+    produces: { mana: 6 },
+    modes: ["fantasy"],
+  },
+};
+
+export function getRealmBuildingCost(
+  type: RealmBuildingType,
+): RealmBuildingCost {
+  return { ...REALM_BUILDING_RULES[type].cost };
+}
+
+/** Build one economic structure if its mode and resource costs permit it. */
+export function buildRealmStructure(
+  state: RealmCampaignState,
+  type: RealmBuildingType,
+): RealmCampaignState | null {
+  const rule = REALM_BUILDING_RULES[type];
+  if (!rule.modes.includes(state.mode)) return null;
+  const cost = rule.cost;
+  if (
+    state.resources.food < cost.food ||
+    state.resources.wood < cost.wood ||
+    state.resources.stone < cost.stone ||
+    state.resources.iron < cost.iron ||
+    state.resources.gold < cost.gold
+  ) {
+    return null;
+  }
+  const nextId = `${type}-${state.turn}-${state.buildings.length + 1}`;
+  return {
+    ...state,
+    resources: {
+      ...state.resources,
+      food: state.resources.food - cost.food,
+      wood: state.resources.wood - cost.wood,
+      stone: state.resources.stone - cost.stone,
+      iron: state.resources.iron - cost.iron,
+      gold: state.resources.gold - cost.gold,
+    },
+    buildings: [...state.buildings, { id: nextId, type, level: 1 }],
+  };
+}
+
+/** Adds deterministic per-turn output from owned campaign structures. */
+export function produceRealmResources(
+  buildings: readonly RealmBuilding[],
+  mode: RealmModeId,
+): Partial<RealmResourceStock> {
+  const output: Partial<RealmResourceStock> = {};
+  for (const building of buildings) {
+    const rule = REALM_BUILDING_RULES[building.type];
+    if (!rule.modes.includes(mode)) continue;
+    const multiplier = Math.max(1, Math.min(10, Math.floor(building.level)));
+    for (const [resource, amount] of Object.entries(rule.produces) as [
+      keyof RealmResourceStock,
+      number,
+    ][]) {
+      output[resource] = (output[resource] ?? 0) + amount * multiplier;
+    }
+  }
+  return output;
 }
