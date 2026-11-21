@@ -1361,6 +1361,7 @@ export class ClientGameRunner {
     const tile = this.gameView.ref(cell.x, cell.y);
     if (
       this.gameView.isLand(tile) &&
+      !this.gameView.isImpassable(tile) &&
       !this.gameView.hasOwner(tile) &&
       this.gameView.inSpawnPhase() &&
       !this.gameView.config().isRandomSpawn()
