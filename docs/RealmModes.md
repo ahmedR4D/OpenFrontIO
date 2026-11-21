@@ -55,6 +55,16 @@ Keep the upstream AGPL-3.0 source notices intact. Open assets under
 `/proprietary` or externally hosted proprietary assets as part of this fork.
 
 
+## Runtime wiring status
+
+The five campaign difficulty profiles in `RealmModes.ts` are currently
+configuration metadata and are not yet mapped into OpenFront's live bot
+spawning, troop, or AI decision systems. The upstream engine currently exposes
+four built-in difficulty values, so the requested five-level campaign scale
+needs an explicit end-to-end mapping before it can affect gameplay. Do not
+present the ratios as active gameplay modifiers until that integration and its
+simulation tests are complete.
+
 ## Current UI integration
 
 The single-player setup now shows a campaign-world picker. Classic is the only
