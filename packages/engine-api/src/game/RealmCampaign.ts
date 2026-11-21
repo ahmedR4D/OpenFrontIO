@@ -259,13 +259,17 @@ export interface RealmTurnReport {
  */
 export function advanceRealmCampaignTurn(
   state: RealmCampaignState,
-  territory?: RealmBuildTerritorySource,
+  territory?: RealmBuildTerritorySource & Partial<RealmTerritorySource>,
 ): {
   state: RealmCampaignState;
   report: RealmTurnReport;
 } {
   const next: RealmCampaignState = {
     ...state,
+    territoryTiles:
+      territory && typeof territory.numTilesOwned === "function"
+        ? Math.max(0, Math.floor(territory.numTilesOwned()))
+        : state.territoryTiles,
     resources: { ...state.resources },
     population: { ...state.population },
     policy: { ...state.policy },
